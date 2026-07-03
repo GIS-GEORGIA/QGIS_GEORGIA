@@ -1,141 +1,449 @@
 <!DOCTYPE html>
-<html lang="en-ka">
+<html lang="ka">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GIS Thematic Landing Page</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <!-- Font Awesome for social media icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QGIS GEORGIA — Open Source GIS Community</title>
+<meta name="description" content="QGIS Georgia — საქართველოს QGIS მომხმარებელთა ღია, არაოფიციალური საზოგადოება. Unofficial open-source QGIS local user group in Georgia.">
+<meta property="og:title" content="QGIS GEORGIA">
+<meta property="og:description" content="საქართველოს QGIS მომხმარებელთა ღია, არაოფიციალური საზოგადოება.">
+<meta property="og:image" content="https://qgis.ge/SVG/QGISGEORGIA.svg">
+<meta name="theme-color" content="#63953C">
+<link rel="icon" href="./SVG/QGISGEORGIA.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  (function () {
+    var saved = localStorage.getItem('qg-theme');
+    var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+    var lang = localStorage.getItem('qg-lang') || 'ka';
+    document.documentElement.setAttribute('lang', lang);
+  })();
+</script>
+<style>
+  :root {
+    --green: #63953c;
+    --green-light: #7cb552;
+    --red: #cd2027;
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(20, 30, 20, .08);
+    --font-ka: 'Noto Sans Georgian', 'Inter', system-ui, sans-serif;
+    --font-en: 'Inter', 'Noto Sans Georgian', system-ui, sans-serif;
+  }
+  html[data-theme="light"] {
+    --bg: #f7faf5;
+    --bg-alt: #ffffff;
+    --surface: #ffffff;
+    --text: #1b241a;
+    --text-muted: #5b6b57;
+    --border: #e3ecdd;
+    --nav-bg: rgba(247, 250, 245, .85);
+  }
+  html[data-theme="dark"] {
+    --bg: #10140f;
+    --bg-alt: #161c13;
+    --surface: #1b2318;
+    --text: #eef2ea;
+    --text-muted: #a9b7a3;
+    --border: #2a3524;
+    --nav-bg: rgba(16, 20, 15, .85);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ka);
+    transition: background .25s ease, color .25s ease;
+    line-height: 1.6;
+  }
+  html[lang="en"] body { font-family: var(--font-en); }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 88px 0; }
 
-    <style>
-        :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #f3f3f3;
-            --font-family: 'Arial', sans-serif;
-        }
-        body, html {
-            height: 100%;
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            width: 100%;
-            text-align: center;
-            padding: 20px 0;
-            position: relative; /* Added */
-        }
-        #map {
-            height: 80%;
-            width: 100%;
-        }
-        .content {
-            text-align: center;
-            padding: 20px;
-        }
-        .contact-section {
-            background-color: var(--secondary-color);
-            padding: 40px 20px;
-            width: 100%;
-        }
-        .contact-section h2 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-        .contact-form {
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: left;
-        }
-        .contact-form label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--primary-color);
-        }
-        .contact-form input, .contact-form textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .contact-form button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .contact-form button:hover {
-            background-color: #45a049;
-        }
-        .social-media {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .social-media a {
-            color: var(--primary-color);
-            font-size: 24px;
-            text-decoration: none;
-        }
-        .social-media a:hover {
-            color: #333;
-        }
-        .logo {
-            position: absolute;
-            top: 0px;
-            left: 10px;
-            width: 150px;
-            height: auto;
-            z-index: 1000;
-        }
-    </style>
+  /* Nav */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; max-width: 1120px; margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; text-decoration: none; }
+  .brand img { width: 34px; height: 34px; }
+  .nav-links { display: flex; align-items: center; gap: 26px; }
+  .nav-links a { text-decoration: none; font-weight: 500; color: var(--text-muted); font-size: .95rem; }
+  .nav-links a:hover { color: var(--green); }
+  .nav-actions { display: flex; align-items: center; gap: 10px; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); cursor: pointer; font-size: .95rem;
+  }
+  .lang-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 20px; padding: 8px 14px; font-weight: 700; font-size: .85rem;
+    cursor: pointer; letter-spacing: .02em;
+  }
+  .menu-toggle { display: none; }
 
+  /* Hero */
+  .hero {
+    padding: 90px 0 70px;
+    background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(99,149,60,.16), transparent 60%),
+      radial-gradient(900px 400px at 0% 0%, rgba(205,32,39,.08), transparent 60%);
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 999px; font-size: .82rem; font-weight: 600;
+    color: var(--text-muted); margin-bottom: 22px;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); margin: 0 0 18px; font-weight: 800; letter-spacing: -.01em; }
+  .hero h1 .accent { color: var(--green); }
+  .hero p.lead { font-size: 1.15rem; color: var(--text-muted); max-width: 680px; margin: 0 0 34px; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 14px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 13px 24px; border-radius: 10px; font-weight: 700; font-size: .95rem;
+    text-decoration: none; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: var(--green); color: #fff; }
+  .btn-primary:hover { background: #567f34; }
+  .btn-outline { background: var(--surface); border-color: var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+
+  /* Section heading */
+  .eyebrow { color: var(--green); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .8rem; margin: 0 0 10px; }
+  .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; margin: 0 0 18px; }
+  .section-lead { color: var(--text-muted); max-width: 720px; font-size: 1.05rem; margin: 0 0 40px; }
+
+  .alt { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  .notice {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 4px solid var(--red);
+    padding: 18px 20px; border-radius: 10px; margin-top: 28px; max-width: 720px;
+  }
+  .notice i { color: var(--red); font-size: 1.2rem; margin-top: 2px; }
+  .notice p { margin: 0; color: var(--text-muted); font-size: .95rem; }
+  .notice strong { color: var(--text); }
+
+  /* Collaboration */
+  .collab-card {
+    display: flex; flex-wrap: wrap; gap: 28px; align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow);
+  }
+  .collab-card .logo-badge {
+    width: 76px; height: 76px; border-radius: 18px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--green), var(--green-light));
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.8rem;
+  }
+  .collab-card .body { flex: 1; min-width: 240px; }
+  .collab-card h3 { margin: 0 0 8px; font-size: 1.25rem; }
+  .collab-card p { margin: 0 0 16px; color: var(--text-muted); }
+
+  /* Project cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--green); }
+  .card .card-icon {
+    width: 48px; height: 48px; border-radius: 12px; background: rgba(99,149,60,.14);
+    color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+  }
+  .card h3 { margin: 0; font-size: 1.1rem; }
+  .card p { margin: 0; color: var(--text-muted); font-size: .95rem; flex: 1; }
+  .card .card-link { font-weight: 700; font-size: .9rem; color: var(--green); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .card .card-link:hover { text-decoration: underline; }
+
+  /* Map */
+  #map { height: 420px; width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); }
+
+  /* Community */
+  .contact-wrap { display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; align-items: center; }
+  .social-media { display: flex; gap: 12px; flex-wrap: wrap; }
+  .social-media a {
+    width: 46px; height: 46px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 1.15rem; text-decoration: none; color: var(--text);
+  }
+  .social-media a:hover { color: #fff; background: var(--green); border-color: var(--green); }
+  .email-link { font-weight: 700; font-size: 1.05rem; text-decoration: none; color: var(--green); display: inline-flex; align-items: center; gap: 10px; }
+
+  /* Footer */
+  footer { padding: 40px 0; border-top: 1px solid var(--border); }
+  .footer-inner { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: .9rem; }
+  .footer-inner a { color: var(--text-muted); text-decoration: none; font-weight: 600; }
+  .footer-inner a:hover { color: var(--green); }
+  .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+  [data-i18n-ka], [data-i18n-en] { display: none; }
+  html[lang="ka"] [data-i18n-ka] { display: initial; }
+  html[lang="en"] [data-i18n-en] { display: initial; }
+  html[lang="ka"] span[data-i18n-ka], html[lang="en"] span[data-i18n-en] { display: inline; }
+  html[lang="ka"] div[data-i18n-ka], html[lang="en"] div[data-i18n-en] { display: block; }
+
+  @media (max-width: 760px) {
+    .nav-links { display: none; }
+    section { padding: 60px 0; }
+    .collab-card { padding: 24px; }
+  }
+</style>
 </head>
 <body>
-    <!-- QGIS Logo -->
-    <div class="header">
-        <img src="./SVG/QGISGEORGIA.svg" alt="QGIS Logo" class="logo">
-        <h1>Welcome to Our OpenSource GIS Platform</h1>
-        <p>Explore geographical data with our interactive map</p>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#top" class="brand">
+      <img src="./SVG/QGISGEORGIA.svg" alt="QGIS GEORGIA logo">
+      <span>QGIS GEORGIA</span>
+    </a>
+    <div class="nav-links">
+      <a href="#about"><span data-i18n-ka>ჩვენ შესახებ</span><span data-i18n-en>About</span></a>
+      <a href="#collaboration"><span data-i18n-ka>თანამშრომლობა</span><span data-i18n-en>Collaboration</span></a>
+      <a href="#projects"><span data-i18n-ka>პროექტები</span><span data-i18n-en>Projects</span></a>
+      <a href="#community"><span data-i18n-ka>კონტაქტი</span><span data-i18n-en>Contact</span></a>
     </div>
+    <div class="nav-actions">
+      <button class="lang-btn" id="langToggle" aria-label="Switch language">
+        <span data-i18n-ka>EN</span><span data-i18n-en>KA</span>
+      </button>
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark/light theme">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+      <a class="icon-btn" href="https://github.com/GIS-GEORGIA/QGIS_GEORGIA" target="_blank" rel="noopener" aria-label="GitHub repository">
+        <i class="fa-brands fa-github"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<a id="top"></a>
+<header class="hero">
+  <div class="container">
+    <div class="badge"><span class="dot"></span>
+      <span data-i18n-ka>არაოფიციალური · ღია კოდის საზოგადოება</span>
+      <span data-i18n-en>Unofficial · Open-source community</span>
+    </div>
+    <h1>
+      <span data-i18n-ka>საქართველოს <span class="accent">QGIS</span> მომხმარებელთა ღია საზოგადოება</span>
+      <span data-i18n-en>Georgia's Open <span class="accent">QGIS</span> User Community</span>
+    </h1>
+    <p class="lead">
+      <span data-i18n-ka>QGIS GEORGIA არის QGIS-ის დამოუკიდებელი, არაოფიციალური ლოკალური მომხმარებელთა ჯგუფი (Local User Group) საქართველოში — ღია კოდის, მოხალისეობრივი ინიციატივა GIS-ისა და ღია კარტოგრაფიის მოყვარულთათვის.</span>
+      <span data-i18n-en>QGIS GEORGIA is an independent, unofficial QGIS Local User Group based in Georgia — an open-source, volunteer-run initiative for GIS and open-cartography enthusiasts.</span>
+    </p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href="https://github.com/GIS-GEORGIA/QGIS_GEORGIA" target="_blank" rel="noopener">
+        <i class="fa-brands fa-github"></i>
+        <span data-i18n-ka>GitHub რეპოზიტორია</span><span data-i18n-en>GitHub Repository</span>
+      </a>
+      <a class="btn btn-outline" href="https://www.facebook.com/groups/GGEORGIA/" target="_blank" rel="noopener">
+        <i class="fa-brands fa-facebook"></i>
+        <span data-i18n-ka>შემოგვიერთდი</span><span data-i18n-en>Join the community</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<section id="about">
+  <div class="container">
+    <p class="eyebrow" data-i18n-ka>ჩვენ შესახებ</p>
+    <p class="eyebrow" data-i18n-en>About</p>
+    <h2 class="section-title">
+      <span data-i18n-ka>QGIS-ის ლოკალური ჯგუფი — ღია, დამოუკიდებელი</span>
+      <span data-i18n-en>A local QGIS group — open and independent</span>
+    </h2>
+    <p class="section-lead">
+      <span data-i18n-ka>QGIS GEORGIA აერთიანებს საქართველოში მოღვაწე GIS სპეციალისტებს, კარტოგრაფებს, დეველოპერებსა და სტუდენტებს, რომლებსაც აქვთ საერთო ინტერესი — ღია კოდის გეოსივრცული ინსტრუმენტები და QGIS ეკოსისტემა.</span>
+      <span data-i18n-en>QGIS GEORGIA brings together GIS specialists, cartographers, developers and students across Georgia who share an interest in open-source geospatial tools and the QGIS ecosystem.</span>
+    </p>
+    <div class="notice">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <p>
+        <span data-i18n-ka><strong>მნიშვნელოვანია:</strong> QGIS GEORGIA არის საზოგადოების მიერ მართული, <strong>არაოფიციალური</strong> ჯგუფი და არ წარმოადგენს QGIS.org-ს ან QGIS Project-ის ოფიციალურ ნაწილს.</span>
+        <span data-i18n-en><strong>Please note:</strong> QGIS GEORGIA is a community-run, <strong>unofficial</strong> group and is not an official part of QGIS.org or the QGIS Project.</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="collaboration" class="alt">
+  <div class="container">
+    <p class="eyebrow" data-i18n-ka>თანამშრომლობა</p>
+    <p class="eyebrow" data-i18n-en>Collaboration</p>
+    <h2 class="section-title">
+      <span data-i18n-ka>ერთად ვქმნით საქართველოს გეოსივრცულ მომავალს</span>
+      <span data-i18n-en>Building Georgia's geospatial future, together</span>
+    </h2>
+    <p class="section-lead">
+      <span data-i18n-ka>ვთანამშრომლობთ საქართველოს კარტოგრაფთა ასოციაციასთან — ერთად ვქმნით ახალ ვებ-გვერდებს, აპლიკაციებსა და ღია გეოსივრცულ გადაწყვეტილებებს.</span>
+      <span data-i18n-en>We collaborate with the Georgian Cartographers Association — together we build new websites, applications and open geospatial solutions.</span>
+    </p>
+    <div class="collab-card">
+      <div class="logo-badge"><i class="fa-solid fa-map-location-dot"></i></div>
+      <div class="body">
+        <h3>Georgian Cartographers Association</h3>
+        <p>
+          <span data-i18n-ka>საქართველოს კარტოგრაფთა ასოციაცია — ჩვენი მთავარი პარტნიორი ერთობლივ პროექტებში, ვებ-გვერდებისა და აპლიკაციების შექმნაში.</span>
+          <span data-i18n-en>The Georgian Cartographers Association — our key partner in joint projects, websites and application development.</span>
+        </p>
+        <a class="card-link" href="https://github.com/Georgian-Cartographers-Association" target="_blank" rel="noopener">
+          <i class="fa-brands fa-github"></i>
+          <span data-i18n-ka>GitHub-ზე ნახვა</span><span data-i18n-en>View on GitHub</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="container">
+    <p class="eyebrow" data-i18n-ka>პროექტები</p>
+    <p class="eyebrow" data-i18n-en>Projects</p>
+    <h2 class="section-title">
+      <span data-i18n-ka>GIS GEORGIA-ს საკუთარი პროექტები</span>
+      <span data-i18n-en>Built by GIS GEORGIA</span>
+    </h2>
+    <p class="section-lead">
+      <span data-i18n-ka>პარტნიორობების პარალელურად, GIS GEORGIA დამოუკიდებლად ავითარებს შემდეგ ღია კოდის პროექტებს:</span>
+      <span data-i18n-en>Alongside our partnerships, GIS GEORGIA independently develops the following open-source projects:</span>
+    </p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon"><i class="fa-solid fa-puzzle-piece"></i></div>
+        <h3>qgis-plugins-repo</h3>
+        <p>
+          <span data-i18n-ka>QGIS პლაგინების რეპოზიტორია, შექმნილი GIS GEORGIA-ს გუნდის მიერ.</span>
+          <span data-i18n-en>A QGIS plugin repository developed by the GIS GEORGIA team.</span>
+        </p>
+        <a class="card-link" href="https://github.com/GIS-GEORGIA/qgis-plugins-repo" target="_blank" rel="noopener">
+          <i class="fa-brands fa-github"></i>
+          <span data-i18n-ka>რეპოზიტორია</span><span data-i18n-en>Repository</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+      <div class="card">
+        <div class="card-icon"><i class="fa-solid fa-database"></i></div>
+        <h3>postgis-manager</h3>
+        <p>
+          <span data-i18n-ka>PostGIS Manager — ჰიბრიდული QGIS პლაგინი და დამოუკიდებელი აპლიკაცია, ქართული და ინგლისური ინტერფეისით.</span>
+          <span data-i18n-en>PostGIS Manager — a hybrid QGIS plugin & standalone app with a Georgian/English GUI.</span>
+        </p>
+        <a class="card-link" href="https://github.com/GIS-GEORGIA/postgis-manager" target="_blank" rel="noopener">
+          <i class="fa-brands fa-github"></i>
+          <span data-i18n-ka>რეპოზიტორია</span><span data-i18n-en>Repository</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="container">
+    <p class="eyebrow" data-i18n-ka>რუკა</p>
+    <p class="eyebrow" data-i18n-en>Map</p>
+    <h2 class="section-title">
+      <span data-i18n-ka>საქართველო — ჩვენი GIS სამშობლო</span>
+      <span data-i18n-en>Georgia — our GIS home</span>
+    </h2>
+    <p class="section-lead">
+      <span data-i18n-ka>ინტერაქტიული რუკა OpenStreetMap-ისა და Leaflet-ის საშუალებით.</span>
+      <span data-i18n-en>An interactive map powered by OpenStreetMap and Leaflet.</span>
+    </p>
     <div id="map"></div>
-    <div class="content">
-        <h2>About Our GIS Services</h2>
-        <p>Our platform provides powerful tools for geographical data visualization and analysis.</p>
+  </div>
+</section>
+
+<section id="community">
+  <div class="container">
+    <p class="eyebrow" data-i18n-ka>კონტაქტი</p>
+    <p class="eyebrow" data-i18n-en>Contact</p>
+    <h2 class="section-title">
+      <span data-i18n-ka>დაგვიკავშირდი</span>
+      <span data-i18n-en>Get in touch</span>
+    </h2>
+    <div class="contact-wrap">
+      <a class="email-link" href="mailto:georgia.qgis@gmail.com"><i class="fa-solid fa-envelope"></i> georgia.qgis@gmail.com</a>
+      <div class="social-media">
+        <a href="https://www.facebook.com/groups/GGEORGIA/" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="https://x.com/i/communities/1525092980054540288" target="_blank" rel="noopener" aria-label="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="https://www.linkedin.com/groups/13671559/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        <a href="https://www.instagram.com/gis_georgia/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://github.com/GIS-GEORGIA" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      </div>
     </div>
-    <div class="contact-section">
-        <h2>Contact Us</h2>
-        <div class="contact-info">
-            <a href="mailto:contact@example.com">georgia.qgis@gmail.com</a>
-            <div class="social-media">
-                <a href="https://www.facebook.com/groups/GGEORGIA/" target="_blank"><i class="fab fa-facebook-square"></i></a>
-                <a href="https://x.com/i/communities/1525092980054540288" target="_blank"><i class="fab fa-twitter-square"></i></a>
-                <a href="https://www.linkedin.com/groups/13671559/" target="_blank"><i class="fab fa-linkedin"></i></a>
-                <a href="https://www.instagram.com/gis_georgia/" target="_blank"><i class="fab fa-instagram-square"></i></a>
-            </div>
-        </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-inner">
+    <div>
+      <span data-i18n-ka>© 2026 QGIS GEORGIA · ღია კოდის პროექტი (CC0)</span>
+      <span data-i18n-en>© 2026 QGIS GEORGIA · Open-source project (CC0)</span>
+      <br>
+      <span data-i18n-ka>დამფუძნებელი: <a href="https://github.com/ezdanapak" target="_blank" rel="noopener">ezdanapak</a></span>
+      <span data-i18n-en>Created by <a href="https://github.com/ezdanapak" target="_blank" rel="noopener">ezdanapak</a></span>
     </div>
+    <div class="footer-links">
+      <a href="https://github.com/GIS-GEORGIA/QGIS_GEORGIA" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> <span data-i18n-ka>რეპოზიტორია</span><span data-i18n-en>Repository</span></a>
+      <a href="https://github.com/GIS-GEORGIA" target="_blank" rel="noopener"><span data-i18n-ka>GIS GEORGIA ორგანიზაცია</span><span data-i18n-en>GIS GEORGIA org</span></a>
+    </div>
+  </div>
+</footer>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        // Initialize the map
-        var map = L.map('map').setView([42, 43.87], 7);
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // Map
+  var map = L.map('map').setView([42, 43.87], 6.4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  L.marker([41.75, 44.80]).addTo(map)
+    .bindPopup('QGIS GEORGIA — QGIS საქართველოს მომხმარებელთა ჯგუფი')
+    .openPopup();
 
-        // Add a tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+  // Theme toggle
+  var root = document.documentElement;
+  var themeIcon = document.getElementById('themeIcon');
+  function syncThemeIcon() {
+    var isDark = root.getAttribute('data-theme') === 'dark';
+    themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  }
+  syncThemeIcon();
+  document.getElementById('themeToggle').addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('qg-theme', next);
+    syncThemeIcon();
+  });
 
-        // Add a marker
-        L.marker([41.75, 44.80]).addTo(map)
-            .bindPopup('QGIS საქართველოს მომხმარებელთა ჯგუფი')
-            .openPopup();
-    </script>
+  // Language toggle
+  document.getElementById('langToggle').addEventListener('click', function () {
+    var next = root.getAttribute('lang') === 'ka' ? 'en' : 'ka';
+    root.setAttribute('lang', next);
+    localStorage.setItem('qg-lang', next);
+  });
+</script>
 </body>
 </html>
